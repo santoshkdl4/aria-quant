@@ -3,7 +3,7 @@ import pytest
 from app.api.data import IngestRequest
 from app.data.fetchers import YFinanceFetcher
 from app.db.duckdb_session import get_duckdb_connection
-from app.core.config import settings, PROJECT_ROOT
+from app.core.config import settings, APP_DATA_DIR
 
 def test_yfinance_fetcher():
     # Only test a small timeframe to not block CI
@@ -13,7 +13,7 @@ def test_yfinance_fetcher():
     assert success is True
     
     # Verify the parquet file was created
-    expected_path = PROJECT_ROOT / settings.MARKET_DATA_PATH / "RELIANCE_NS_1d.parquet"
+    expected_path = APP_DATA_DIR / settings.MARKET_DATA_PATH / "RELIANCE_NS_1d.parquet"
     assert expected_path.exists()
 
 def test_duckdb_connection():

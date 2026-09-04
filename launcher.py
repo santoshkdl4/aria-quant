@@ -2,7 +2,19 @@ import threading
 import time
 import sys
 import os
+
+# Fix for --noconsole Windows apps where sys.stdout and sys.stderr are None.
+# Many libraries (like uvicorn) crash if they try to access .isatty() on None.
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w")
+
 import uvicorn
+import uvicorn.loops.auto
+import uvicorn.protocols.http.auto
+import uvicorn.protocols.websockets.auto
+import uvicorn.lifespan.on
 import webbrowser
 import pystray
 from PIL import Image, ImageDraw
@@ -25,11 +37,20 @@ class AriaLauncher:
         self.server_thread = None
 
     def start_server(self):
-        # We run uvicorn programmatically
-        from app.main import app
-        config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="error")
-        self.server = uvicorn.Server(config)
-        self.server.run()
+        try:
+            # We run uvicorn programmatically
+            from app.main import app
+            config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="debug")
+            self.server = uvicorn.Server(config)
+            self.server.run()
+        except Exception as e:
+            import traceback
+            import os
+            from app.core.config import APP_DATA_DIR
+            error_file = os.path.join(APP_DATA_DIR, "logs", "launcher_error.txt")
+            with open(error_file, "w") as f:
+                f.write(traceback.format_exc())
+
 
     def on_open(self, icon, item):
         webbrowser.open('http://127.0.0.1:8000')

@@ -57,10 +57,10 @@ export default function SystemHealth() {
           status={health?.memory_percent > 85 ? 'warning' : 'ok'}
         />
         <HealthCard 
-          title="Disk Free" 
-          value={`${health?.disk_free_gb.toFixed(1) || 0} GB`}
-          icon={<HardDrive size={24} className="text-aria-cyan" />}
-          status={health?.disk_free_gb < 10 ? 'warning' : 'ok'}
+          title="Database Size" 
+          value={`${health?.db_size_mb.toFixed(2) || 0} MB`}
+          icon={<Database size={24} className="text-aria-cyan" />}
+          status={health?.db_size_mb > 1024 ? 'warning' : 'ok'}
         />
         <HealthCard 
           title="Uptime" 

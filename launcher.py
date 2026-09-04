@@ -5,10 +5,15 @@ import os
 
 # Fix for --noconsole Windows apps where sys.stdout and sys.stderr are None.
 # Many libraries (like uvicorn) crash if they try to access .isatty() on None.
+class NullWriter:
+    def write(self, *args, **kwargs): pass
+    def flush(self, *args, **kwargs): pass
+    def isatty(self): return False
+
 if sys.stdout is None:
-    sys.stdout = open(os.devnull, "w")
+    sys.stdout = NullWriter()
 if sys.stderr is None:
-    sys.stderr = open(os.devnull, "w")
+    sys.stderr = NullWriter()
 
 import uvicorn
 import uvicorn.loops.auto
@@ -40,7 +45,7 @@ class AriaLauncher:
         try:
             # We run uvicorn programmatically
             from app.main import app
-            config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="debug")
+            config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="debug", use_colors=False)
             self.server = uvicorn.Server(config)
             self.server.run()
         except Exception as e:

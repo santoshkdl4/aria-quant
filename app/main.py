@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.core.logger import logger
 from app.db.session import state_engine, memory_engine, Base
 from app.scheduler.scheduler import start_scheduler, stop_scheduler
+from app.data.live import live_feed
 
 # Import all models here so SQLAlchemy knows about them before create_all
 from app.db.models_state import AgentState, ApprovalRequest

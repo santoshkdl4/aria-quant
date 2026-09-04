@@ -1,6 +1,7 @@
 import React from 'react'
 import { Activity, BrainCircuit, Terminal as TerminalIcon, TrendingUp } from 'lucide-react'
 import CommandTerminal from '../components/CommandTerminal'
+import PortfolioChart from '../components/PortfolioChart'
 
 export default function DashboardHome() {
   return (
@@ -51,11 +52,15 @@ export default function DashboardHome() {
 
         {/* Quick Actions / Activity Feed */}
         <div className="lg:col-span-2 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ActionCard icon={<TrendingUp size={20} />} title="Start Backtest" desc="Run algorithms on historical data" />
-            <ActionCard icon={<Activity size={20} />} title="Paper Trading" desc="Simulate live market execution" />
-            <ActionCard icon={<TerminalIcon size={20} />} title="System Logs" desc="View real-time engine logs" />
-            <ActionCard icon={<BrainCircuit size={20} />} title="Research Mode" desc="Generate new hypotheses" />
+          <div className="grid grid-cols-1 gap-4">
+            <PortfolioChart />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
+            <ActionCard icon={<TrendingUp size={20} />} title="Backtest" desc="Historical Data" />
+            <ActionCard icon={<Activity size={20} />} title="Live Trade" desc="Paper execution" />
+            <ActionCard icon={<TerminalIcon size={20} />} title="Logs" desc="System traces" />
+            <ActionCard icon={<BrainCircuit size={20} />} title="Research" desc="AI Hypotheses" />
           </div>
 
           <CommandTerminal />

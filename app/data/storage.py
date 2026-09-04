@@ -1,12 +1,12 @@
 import os
 import pandas as pd
 from pathlib import Path
-from app.core.config import settings, PROJECT_ROOT
+from app.core.config import settings, APP_DATA_DIR
 
 def get_parquet_path(symbol: str, timeframe: str) -> Path:
     # Ensure safe filename
     safe_symbol = symbol.replace("^", "").replace(".", "_")
-    base_dir = PROJECT_ROOT / settings.MARKET_DATA_PATH
+    base_dir = APP_DATA_DIR / settings.MARKET_DATA_PATH
     base_dir.mkdir(parents=True, exist_ok=True)
     return base_dir / f"{safe_symbol}_{timeframe}.parquet"
 

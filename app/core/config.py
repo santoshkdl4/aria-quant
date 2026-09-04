@@ -2,8 +2,9 @@ import os
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Ensure paths are resolved relative to the project root
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+# Ensure paths are resolved relative to the user's home directory for portability
+USER_HOME = Path(os.path.expanduser("~"))
+APP_DATA_DIR = USER_HOME / ".aria_quant"
 
 class Settings(BaseSettings):
     # Application Mode
@@ -22,18 +23,18 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     model_config = SettingsConfigDict(
-        env_file=str(PROJECT_ROOT / "config" / ".env"),
+        env_file=str(APP_DATA_DIR / ".env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )
 
     def get_state_db_url(self) -> str:
-        db_path = PROJECT_ROOT / self.STATE_DB_PATH
+        db_path = APP_DATA_DIR / self.STATE_DB_PATH
         db_path.parent.mkdir(parents=True, exist_ok=True)
         return f"sqlite:///{db_path}"
 
     def get_memory_db_url(self) -> str:
-        db_path = PROJECT_ROOT / self.MEMORY_DB_PATH
+        db_path = APP_DATA_DIR / self.MEMORY_DB_PATH
         db_path.parent.mkdir(parents=True, exist_ok=True)
         return f"sqlite:///{db_path}"
 

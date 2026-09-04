@@ -1,5 +1,5 @@
 import duckdb
-from app.core.config import settings, PROJECT_ROOT
+from app.core.config import settings, APP_DATA_DIR
 from app.core.logger import logger
 
 def get_duckdb_connection():
@@ -10,7 +10,7 @@ def get_duckdb_connection():
     con = duckdb.connect(database=':memory:')
     
     # Create a view that automatically unions all parquet files in the directory
-    parquet_path = PROJECT_ROOT / settings.MARKET_DATA_PATH / "*.parquet"
+    parquet_path = APP_DATA_DIR / settings.MARKET_DATA_PATH / "*.parquet"
     
     try:
         # Create a view over the parquet files

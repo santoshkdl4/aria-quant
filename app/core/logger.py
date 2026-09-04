@@ -1,10 +1,10 @@
 import sys
 from pathlib import Path
 from loguru import logger
-from app.core.config import settings, PROJECT_ROOT
+from app.core.config import settings, APP_DATA_DIR
 
 # Configure structured logging
-log_dir = PROJECT_ROOT / "logs"
+log_dir = APP_DATA_DIR / "logs"
 log_dir.mkdir(parents=True, exist_ok=True)
 
 # Remove default handler

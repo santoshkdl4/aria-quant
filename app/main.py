@@ -1,6 +1,9 @@
+import os
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
@@ -60,6 +63,21 @@ app.include_router(health_router, prefix="/api/system", tags=["System"])
 app.include_router(data_router, prefix="/api/data", tags=["Data"])
 app.include_router(research_router, prefix="/api/research", tags=["Research"])
 app.include_router(trading_router, prefix="/api/trading", tags=["Trading"])
+
+# Serve Frontend statically
+frontend_dist = os.path.join(os.path.dirname(__file__), "dashboard", "dist")
+if os.path.isdir(frontend_dist):
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+    
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_frontend(full_path: str):
+        # Allow serving standard files from dist root (e.g. vite.svg, robots.txt)
+        file_path = os.path.join(frontend_dist, full_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+else:
+    logger.warning("Frontend dist folder not found. Running in API-only mode.")
 
 if __name__ == "__main__":
     logger.info("Starting ARIA QUANT Backend...")

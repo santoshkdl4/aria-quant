@@ -84,8 +84,15 @@ if os.path.isdir(frontend_dist):
         # Allow serving standard files from dist root (e.g. vite.svg, robots.txt)
         file_path = os.path.join(frontend_dist, full_path)
         if os.path.isfile(file_path):
-            return FileResponse(file_path)
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+            response = FileResponse(file_path)
+        else:
+            response = FileResponse(os.path.join(frontend_dist, "index.html"))
+        
+        # Prevent caching of index.html so Vite bundle updates propagate immediately
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 else:
     logger.warning("Frontend dist folder not found. Running in API-only mode.")
 

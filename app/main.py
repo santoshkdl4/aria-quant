@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
@@ -32,9 +33,20 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy", "mode": "paper_trading" if not settings.LIVE_TRADING_ENABLED else "LIVE"}
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # For development; restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Import routers
+from app.api.health import router as health_router
+
+# Include routers
+app.include_router(health_router, prefix="/api/system", tags=["System"])
 
 if __name__ == "__main__":
     logger.info("Starting ARIA QUANT Backend...")

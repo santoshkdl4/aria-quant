@@ -15,6 +15,7 @@ apscheduler>=3.10.4
 pandas>=2.2.1
 numpy>=1.26.4
 pyarrow>=15.0.2
+yfinance>=0.2.37
 
 # LLM Integrations
 google-genai>=0.3.0

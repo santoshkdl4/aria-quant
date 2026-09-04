@@ -44,9 +44,11 @@ app.add_middleware(
 
 # Import routers
 from app.api.health import router as health_router
+from app.api.data import router as data_router
 
 # Include routers
 app.include_router(health_router, prefix="/api/system", tags=["System"])
+app.include_router(data_router, prefix="/api/data", tags=["Data"])
 
 if __name__ == "__main__":
     logger.info("Starting ARIA QUANT Backend...")

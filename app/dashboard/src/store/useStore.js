@@ -6,6 +6,7 @@ export const useStore = create((set, get) => ({
   terminalMessages: [
     { id: 1, sender: 'aria', text: 'System initialized. I am ARIA. How can I assist with your research today?' }
   ],
+  livePrices: {},
   
   connectWebSocket: () => {
     // Prevent multiple connections
@@ -25,6 +26,13 @@ export const useStore = create((set, get) => ({
         const data = JSON.parse(event.data);
         if (data.type === 'terminal_response' || data.type === 'log') {
           get().addTerminalMessage(data.sender || 'system', data.text);
+        } else if (data.type === 'agent_code') {
+          get().addTerminalMessage('system', `[AGENT CODE]\n${data.code}`);
+        } else if (data.type === 'backtest_metrics') {
+          const m = data.metrics;
+          get().addTerminalMessage('system', `[METRICS] WinRate: ${(m.win_rate*100).toFixed(1)}%, Return: ${(m.total_return*100).toFixed(1)}%`);
+        } else if (data.type === 'live_prices') {
+          set({ livePrices: data.prices });
         }
       } catch (err) {
         console.error("Failed to parse WebSocket message:", err);

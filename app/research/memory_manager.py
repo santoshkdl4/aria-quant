@@ -1,4 +1,4 @@
-from app.db.session import SessionLocalMemory
+from app.db.session import MemorySessionLocal
 from app.db.models_memory import Strategy, Experiment
 from sqlalchemy.orm import Session
 from app.core.logger import logger
@@ -13,7 +13,7 @@ class MemoryManager:
         status: str,
         failure_reason: str = ""
     ):
-        db: Session = SessionLocalMemory()
+        db: Session = MemorySessionLocal()
         try:
             strategy = Strategy(
                 experiment_id=experiment_id,
@@ -37,7 +37,7 @@ class MemoryManager:
             
     @staticmethod
     def get_graveyard_summary():
-        db: Session = SessionLocalMemory()
+        db: Session = MemorySessionLocal()
         try:
             strategies = db.query(Strategy).filter(Strategy.status == 'REJECTED').all()
             return [
@@ -52,7 +52,7 @@ class MemoryManager:
             
     @staticmethod
     def create_experiment(agent_id: str, prompt: str) -> int:
-        db: Session = SessionLocalMemory()
+        db: Session = MemorySessionLocal()
         try:
             exp = Experiment(agent_id=agent_id, prompt_used=prompt)
             db.add(exp)

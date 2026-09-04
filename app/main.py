@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.logger import logger
 from app.db.session import state_engine, memory_engine, Base
+from app.scheduler.scheduler import start_scheduler, stop_scheduler
 
 # Import all models here so SQLAlchemy knows about them before create_all
 from app.db.models_state import AgentState, ApprovalRequest
@@ -19,11 +20,17 @@ async def lifespan(app: FastAPI):
     
     # Initialize DB schemas
     logger.info("Checking database schemas...")
+    logger.info("Initializing Memory Database...")
     Base.metadata.create_all(bind=state_engine)
     Base.metadata.create_all(bind=memory_engine)
     
+    # Start Scheduler
+    start_scheduler()
+    
     yield
     
+    # Shutdown
+    stop_scheduler()
     logger.info("ARIA QUANT system shutting down gracefully.")
 
 app = FastAPI(
@@ -46,11 +53,13 @@ app.add_middleware(
 from app.api.health import router as health_router
 from app.api.data import router as data_router
 from app.api.research import router as research_router
+from app.api.trading import router as trading_router
 
 # Include routers
 app.include_router(health_router, prefix="/api/system", tags=["System"])
 app.include_router(data_router, prefix="/api/data", tags=["Data"])
 app.include_router(research_router, prefix="/api/research", tags=["Research"])
+app.include_router(trading_router, prefix="/api/trading", tags=["Trading"])
 
 if __name__ == "__main__":
     logger.info("Starting ARIA QUANT Backend...")

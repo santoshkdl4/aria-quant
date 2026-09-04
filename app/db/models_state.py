@@ -27,3 +27,12 @@ class ApprovalRequest(Base):
     status = Column(String, default="PENDING") # PENDING, APPROVED, REJECTED
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     resolved_at = Column(DateTime(timezone=True), nullable=True)
+
+class PortfolioState(Base):
+    __tablename__ = "portfolio"
+
+    id = Column(Integer, primary_key=True, index=True)
+    virtual_capital = Column(Float, default=1000000.0)
+    current_portfolio_value = Column(Float, default=1000000.0)
+    active_positions = Column(JSON, default=dict)
+    trade_history = Column(JSON, default=list)

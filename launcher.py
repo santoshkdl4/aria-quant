@@ -1,0 +1,84 @@
+import threading
+import time
+import sys
+import os
+
+# Fix for --noconsole Windows apps where sys.stdout and sys.stderr are None.
+# Many libraries (like uvicorn) crash if they try to access .isatty() on None.
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w")
+
+import uvicorn
+import uvicorn.loops.auto
+import uvicorn.protocols.http.auto
+import uvicorn.protocols.websockets.auto
+import uvicorn.lifespan.on
+import webbrowser
+import pystray
+from PIL import Image, ImageDraw
+
+def create_icon_image():
+    # Generate a simple icon if we don't have one
+    width = 64
+    height = 64
+    image = Image.new('RGB', (width, height), color=(11, 17, 32))
+    dc = ImageDraw.Draw(image)
+    dc.rectangle(
+        (width // 4, height // 4, width * 3 // 4, height * 3 // 4),
+        fill=(34, 211, 238) # aria-cyan
+    )
+    return image
+
+class AriaLauncher:
+    def __init__(self):
+        self.server = None
+        self.server_thread = None
+
+    def start_server(self):
+        try:
+            # We run uvicorn programmatically
+            from app.main import app
+            config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="debug")
+            self.server = uvicorn.Server(config)
+            self.server.run()
+        except Exception as e:
+            import traceback
+            import os
+            from app.core.config import APP_DATA_DIR
+            error_file = os.path.join(APP_DATA_DIR, "logs", "launcher_error.txt")
+            with open(error_file, "w") as f:
+                f.write(traceback.format_exc())
+
+
+    def on_open(self, icon, item):
+        webbrowser.open('http://127.0.0.1:8000')
+
+    def on_exit(self, icon, item):
+        icon.stop()
+        if self.server:
+            self.server.should_exit = True
+
+    def run(self):
+        # Start server in thread
+        self.server_thread = threading.Thread(target=self.start_server, daemon=True)
+        self.server_thread.start()
+
+        # Wait for server to bind
+        time.sleep(2)
+
+        # Setup System Tray
+        image = create_icon_image()
+        menu = pystray.Menu(
+            pystray.MenuItem('Open ARIA Dashboard', self.on_open, default=True),
+            pystray.MenuItem('Exit', self.on_exit)
+        )
+        icon = pystray.Icon("ARIA_QUANT", image, "ARIA QUANT Lab", menu)
+        
+        # This blocks until exit
+        icon.run()
+
+if __name__ == '__main__':
+    launcher = AriaLauncher()
+    launcher.run()

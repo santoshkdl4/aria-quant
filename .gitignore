@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env_aria/
+venv/
+env/
+ENV/
+
+# Configuration
+config/.env
+
+# Databases and large data files (except tracking their existence if needed)
+# We track the schema or migrations, but not the raw db state
+data/databases/*.db
+data/databases/*.sqlite
+data/databases/*.sqlite3
+data/parquet/*.parquet
+data/raw/*
+
+# Logs
+logs/*.log
+logs/*.jsonl
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Node/React
+app/dashboard/node_modules/
+app/dashboard/.next/
+app/dashboard/out/
+app/dashboard/build/

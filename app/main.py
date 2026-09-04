@@ -6,6 +6,10 @@ from app.core.config import settings
 from app.core.logger import logger
 from app.db.session import state_engine, memory_engine, Base
 
+# Import all models here so SQLAlchemy knows about them before create_all
+from app.db.models_state import AgentState, ApprovalRequest
+from app.db.models_memory import Experiment, Strategy, DecisionLog, SystemMemory
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing ARIA QUANT system...")

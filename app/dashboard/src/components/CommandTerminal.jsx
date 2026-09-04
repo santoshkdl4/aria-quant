@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Send, Terminal } from 'lucide-react'
+import { useStore } from '../store/useStore'
 
 export default function CommandTerminal() {
-  const [messages, setMessages] = useState([
-    { id: 1, sender: 'aria', text: 'System initialized. I am ARIA. How can I assist with your research today?' }
-  ])
+  const { terminalMessages, sendTerminalCommand, connectWebSocket, isConnected } = useStore()
   const [input, setInput] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef(null)
+
+  useEffect(() => {
+    connectWebSocket()
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -15,26 +17,14 @@ export default function CommandTerminal() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages, isTyping])
+  }, [terminalMessages])
 
   const handleSend = async (e) => {
     e.preventDefault()
     if (!input.trim()) return
 
-    const userMessage = { id: Date.now(), sender: 'user', text: input }
-    setMessages(prev => [...prev, userMessage])
+    sendTerminalCommand(input)
     setInput('')
-    setIsTyping(true)
-
-    // Simulate backend response for now (to be wired up later)
-    setTimeout(() => {
-      setIsTyping(false)
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: 'aria',
-        text: `Command received: "${userMessage.text}". I am currently operating in paper trading mode and will route this request to the designated agent pipeline.`
-      }])
-    }, 1500)
   }
 
   return (
@@ -45,7 +35,7 @@ export default function CommandTerminal() {
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map(msg => (
+        {terminalMessages.map(msg => (
           <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[80%] rounded-lg p-3 text-sm ${
               msg.sender === 'user' 
@@ -56,12 +46,10 @@ export default function CommandTerminal() {
             </div>
           </div>
         ))}
-        {isTyping && (
+        {!isConnected && (
           <div className="flex justify-start">
-            <div className="bg-gray-800 border border-gray-700 rounded-lg rounded-bl-none p-3 flex space-x-1">
-              <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
-              <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-              <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+            <div className="bg-red-900/30 border border-red-700/50 rounded-lg rounded-bl-none p-3 text-sm text-red-400">
+              Connection lost. Attempting to reconnect...
             </div>
           </div>
         )}

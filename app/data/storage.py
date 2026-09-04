@@ -12,17 +12,19 @@ def get_parquet_path(symbol: str, timeframe: str) -> Path:
 
 def save_to_parquet(df: pd.DataFrame, symbol: str, timeframe: str):
     """
-    Saves a normalized pandas DataFrame to a parquet file.
+    Saves a normalized pandas DataFrame to a parquet file using Hive partitioning.
     Expected schema: timestamp, open, high, low, close, volume, open_interest, symbol
     """
     if df.empty:
         return
         
-    path = get_parquet_path(symbol, timeframe)
+    safe_symbol = symbol.replace("^", "").replace(".", "_")
+    base_dir = APP_DATA_DIR / settings.MARKET_DATA_PATH
+    base_dir.mkdir(parents=True, exist_ok=True)
     
     # Ensure standard columns
     if 'symbol' not in df.columns:
-        df['symbol'] = symbol
+        df['symbol'] = safe_symbol
         
     if 'open_interest' not in df.columns:
         df['open_interest'] = 0.0
@@ -38,8 +40,15 @@ def save_to_parquet(df: pd.DataFrame, symbol: str, timeframe: str):
     # Convert column names to lowercase for consistency
     df.columns = [c.lower() for c in df.columns]
         
+    # Ensure timestamp is datetime for partitioning
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    
+    # Add partition columns
+    df['year'] = df['timestamp'].dt.year
+    df['month'] = df['timestamp'].dt.month
+    
     # Reorder columns to match standard schema
-    cols = ['timestamp', 'symbol', 'open', 'high', 'low', 'close', 'volume', 'open_interest']
+    cols = ['timestamp', 'symbol', 'open', 'high', 'low', 'close', 'volume', 'open_interest', 'year', 'month']
     # Keep only these columns if they exist, fill missing with 0 or NaN
     for col in cols:
         if col not in df.columns:
@@ -50,5 +59,12 @@ def save_to_parquet(df: pd.DataFrame, symbol: str, timeframe: str):
                 
     df = df[cols]
     
-    # Save to parquet
-    df.to_parquet(str(path), engine='pyarrow', compression='snappy', index=False)
+    # Save to partitioned parquet with ZSTD compression
+    df.to_parquet(
+        str(base_dir),
+        engine='pyarrow',
+        compression='zstd',
+        partition_cols=['symbol', 'year', 'month'],
+        index=False,
+        existing_data_behavior='delete_matching' # Overwrites existing partitions cleanly
+    )

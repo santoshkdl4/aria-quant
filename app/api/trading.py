@@ -12,12 +12,12 @@ class TradeRequest(BaseModel):
     price: float
 
 @router.get("/portfolio")
-def get_portfolio():
-    return {"status": "success", "data": engine.get_portfolio_status()}
+async def get_portfolio():
+    return {"status": "success", "data": await engine.get_portfolio_status()}
 
 @router.post("/execute_mock")
-def execute_mock(req: TradeRequest):
-    success = engine.execute_mock_trade(req.symbol, req.side.upper(), req.qty, req.price)
+async def execute_mock(req: TradeRequest):
+    success = await engine.execute_mock_trade(req.symbol, req.side.upper(), req.qty, req.price)
     if success:
         return {"status": "success", "message": f"Executed {req.side} {req.qty} {req.symbol}"}
     return {"status": "error", "message": "Trade execution failed (insufficient funds/positions)"}

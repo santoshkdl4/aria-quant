@@ -12,14 +12,14 @@ def test_yfinance_fetcher():
     success = fetcher.fetch_historical("RELIANCE.NS", "1d", "2024-01-01", "2024-01-07")
     assert success is True
     
-    # Verify the parquet file was created
-    expected_path = APP_DATA_DIR / settings.MARKET_DATA_PATH / "RELIANCE_NS_1d.parquet"
+    # Verify the parquet file was created using Hive partitioning
+    expected_path = APP_DATA_DIR / settings.MARKET_DATA_PATH / "symbol=RELIANCE_NS"
     assert expected_path.exists()
 
 def test_duckdb_connection():
     # Verify duckdb can read the created file
     con = get_duckdb_connection()
-    res = con.execute("SELECT * FROM market_data WHERE symbol = 'RELIANCE.NS'").df()
+    res = con.execute("SELECT * FROM market_data WHERE symbol = 'RELIANCE_NS'").df()
     assert not res.empty
     assert len(res) > 0
     assert 'timestamp' in res.columns

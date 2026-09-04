@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, JSON
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, JSON, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.session import Base
 
@@ -35,4 +36,19 @@ class PortfolioState(Base):
     virtual_capital = Column(Float, default=1000000.0)
     current_portfolio_value = Column(Float, default=1000000.0)
     active_positions = Column(JSON, default=dict)
-    trade_history = Column(JSON, default=list)
+    
+    # Relationship to trades
+    trades = relationship("Trade", back_populates="portfolio", cascade="all, delete-orphan")
+
+class Trade(Base):
+    __tablename__ = "trades"
+    
+    id = Column(String, primary_key=True, index=True)
+    portfolio_id = Column(Integer, ForeignKey("portfolio.id"))
+    symbol = Column(String, index=True)
+    side = Column(String) # BUY / SELL
+    qty = Column(Integer)
+    price = Column(Float)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    
+    portfolio = relationship("PortfolioState", back_populates="trades")

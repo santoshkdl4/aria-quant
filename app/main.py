@@ -24,8 +24,15 @@ async def lifespan(app: FastAPI):
     # Initialize DB schemas
     logger.info("Checking database schemas...")
     logger.info("Initializing Memory Database...")
-    Base.metadata.create_all(bind=state_engine)
-    Base.metadata.create_all(bind=memory_engine)
+    async with state_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    async with memory_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        
+    # Initialize trading engine state
+    from app.api.trading import engine
+    await engine.initialize()
+    
     
     # Start Scheduler
     start_scheduler()
@@ -57,12 +64,14 @@ from app.api.health import router as health_router
 from app.api.data import router as data_router
 from app.api.research import router as research_router
 from app.api.trading import router as trading_router
+from app.api.ws import router as ws_router
 
 # Include routers
 app.include_router(health_router, prefix="/api/system", tags=["System"])
 app.include_router(data_router, prefix="/api/data", tags=["Data"])
 app.include_router(research_router, prefix="/api/research", tags=["Research"])
 app.include_router(trading_router, prefix="/api/trading", tags=["Trading"])
+app.include_router(ws_router, prefix="/api/ws", tags=["WebSockets"])
 
 # Serve Frontend statically
 frontend_dist = os.path.join(os.path.dirname(__file__), "dashboard", "dist")

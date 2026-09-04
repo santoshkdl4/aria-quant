@@ -1,22 +1,21 @@
 from fastapi.testclient import TestClient
 from app.main import app
 
-client = TestClient(app)
-
 def test_trading_engine():
-    # Buy
-    resp = client.post("/api/trading/execute_mock", json={
-        "symbol": "RELIANCE",
-        "side": "BUY",
-        "qty": 10,
-        "price": 2500.0
-    })
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "success"
-    
-    # Check Portfolio
-    resp2 = client.get("/api/trading/portfolio")
-    assert resp2.status_code == 200
-    data = resp2.json()["data"]
-    assert "RELIANCE" in data["positions"]
-    assert data["positions"]["RELIANCE"]["qty"] == 10
+    with TestClient(app) as client:
+        # Buy
+        resp = client.post("/api/trading/execute_mock", json={
+            "symbol": "RELIANCE",
+            "side": "BUY",
+            "qty": 10,
+            "price": 2500.0
+        })
+        assert resp.status_code == 200
+        assert resp.json()["status"] == "success"
+        
+        # Check Portfolio
+        resp2 = client.get("/api/trading/portfolio")
+        assert resp2.status_code == 200
+        data = resp2.json()["data"]
+        assert "RELIANCE" in data["positions"]
+        assert data["positions"]["RELIANCE"]["qty"] == 10

@@ -7,6 +7,7 @@ pydantic-settings>=2.2.0
 # Database
 SQLAlchemy>=2.0.29
 duckdb>=0.10.1
+aiosqlite>=0.20.0
 
 # Background tasks & Scheduling
 apscheduler>=3.10.4

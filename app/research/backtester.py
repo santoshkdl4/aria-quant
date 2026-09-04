@@ -18,10 +18,11 @@ class BacktestResult:
             "trades_count": self.trades_count
         }
 
-def run_backtest(df: pd.DataFrame, signal_col: str = 'signal') -> BacktestResult:
+def run_backtest(df: pd.DataFrame, signal_col: str = 'signal', fee: float = 0.001) -> BacktestResult:
     """
     Runs a vectorized backtest on a DataFrame containing price data and a signal column.
     Signal should be 1 (Long), -1 (Short), or 0 (Neutral).
+    Applies a standard fee (default 0.1%) on every position change.
     """
     if signal_col not in df.columns:
         raise ValueError(f"Column '{signal_col}' not found in DataFrame")
@@ -34,6 +35,13 @@ def run_backtest(df: pd.DataFrame, signal_col: str = 'signal') -> BacktestResult
     # Shift signal by 1 day to simulate buying at the next day's open
     # We use close-to-close returns here for simplicity, assuming execution at close.
     df['strategy_returns'] = df['returns'] * df[signal_col].shift(1)
+    
+    # Apply Transaction Costs
+    df['position_change'] = df[signal_col].diff().abs()
+    df['transaction_cost'] = df['position_change'] * fee
+    # Fill NA for the first day to 0
+    df['transaction_cost'] = df['transaction_cost'].fillna(0.0)
+    df['strategy_returns'] = df['strategy_returns'] - df['transaction_cost']
     
     # Drop NAs
     df = df.dropna(subset=['strategy_returns'])
